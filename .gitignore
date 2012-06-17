@@ -1,0 +1,7 @@
+*.class
+*.jar
+*.props
+client/*
+isom/*
+src/*
+!src/mod_TrapCraft.java

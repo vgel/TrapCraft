@@ -36,11 +36,19 @@ public class mod_TrapCraft extends BaseMod {
 		System.out.println("id=" + id);
 		obsidianPressurePlate = (new BlockObsidianPressurePlate(id, Block.obsidian.blockIndexInTexture, Material.rock)).setHardness(0.5F).setStepSound(Block.soundStoneFootstep).setBlockName("obPressurePlate").setRequiresSelfNotify();
 		ModLoader.registerBlock(obsidianPressurePlate);
-		ModLoader.addRecipe(new ItemStack(obsidianPressurePlate, 64), new Object[]{
+		ModLoader.addRecipe(new ItemStack(obsidianPressurePlate, 1), new Object[]{
 			"   ",
-			" D ",
+			"OOO",
+			"RRR",
+			'O', Block.obsidian,
+			'R', Item.redstone
+		});
+		ModLoader.addRecipe(new ItemStack(obsidianPressurePlate, 1), new Object[]{
+			"OOO",
+			"RRR",
 			"   ",
-			'D', Block.dirt
+			'O', Block.obsidian,
+			'R', Item.redstone
 		});
 		ModLoader.addName(obsidianPressurePlate, "Obsidian Pressure Plate");
 		ModLoader.registerTileEntity(TileEntityObsidianPressurePlate.class, "tileEntityObsidianPressurePlate");

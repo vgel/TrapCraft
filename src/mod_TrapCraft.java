@@ -10,6 +10,7 @@ import java.util.Random;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.trapcraft.BlockObsidianPressurePlate;
+import net.minecraft.trapcraft.TileEntityObsidianPressurePlate;
 
 public class mod_TrapCraft extends BaseMod {
 	final String VERSION = "0.1 (1.2.5)";
@@ -42,6 +43,7 @@ public class mod_TrapCraft extends BaseMod {
 			'D', Block.dirt
 		});
 		ModLoader.addName(obsidianPressurePlate, "Obsidian Pressure Plate");
+		ModLoader.registerTileEntity(TileEntityObsidianPressurePlate.class, "tileEntityObsidianPressurePlate");
 	}
 	
 	void setupDefaults(){

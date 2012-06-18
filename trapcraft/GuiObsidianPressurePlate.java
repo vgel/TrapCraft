@@ -1,17 +1,20 @@
 package net.minecraft.trapcraft;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.minecraft.src.EntityList;
+import net.minecraft.src.GuiButton;
+import net.minecraft.src.GuiOptions;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.ModLoader;
 
 public class GuiObsidianPressurePlate extends GuiScreen {
-	static Map<String, String> camelToRegular;
 	static Map<String, Class<?>> strToClass;
+	
 	static {
-		camelToRegular = new HashMap<String, String>();
 		try {
 			strToClass = (Map<String, Class<?>>)ModLoader.getPrivateValue(EntityList.class, null, "b");
 		} catch (Exception e){ //would use multicatch but not 1.7 :(
@@ -20,9 +23,6 @@ public class GuiObsidianPressurePlate extends GuiScreen {
 			} catch (Exception e1){
 				e.printStackTrace();
 			}
-		}
-		for (String s : strToClass.keySet()){
-			camelToRegular.put(s, unCamelCase(s));
 		}
 	}
 	
@@ -52,20 +52,96 @@ public class GuiObsidianPressurePlate extends GuiScreen {
 		return Character.isAlphabetic(c) && Character.isUpperCase(c);
 	}
 	
-	public GuiObsidianPressurePlate() {
-		// TODO Auto-generated constructor stub
+	TileEntityObsidianPressurePlate te;
+	Map<GuiOPPButton, String> buttonToEntityString;
+	
+	public GuiObsidianPressurePlate(TileEntityObsidianPressurePlate te) {
+		this.te = te;
+		buttonToEntityString = new HashMap<GuiOPPButton, String>();
 	}
 	
 	@Override
-	public boolean doesGuiPauseGame() {
-		return true;
+	public void initGui() {
+		super.initGui();
+		addButtons();
+	}
+	
+	@Override
+	protected void actionPerformed(GuiButton guibutton) {
+		super.actionPerformed(guibutton);
+		if (guibutton instanceof GuiOPPButton){
+			((GuiOPPButton)guibutton).buttonClicked();
+		}
+	}
+	
+	@Override
+	public void onGuiClosed() {
+		super.onGuiClosed();
+		te.triggering.clear();
+		for (Object o : controlList){
+			if (o instanceof GuiOPPButton && ((GuiOPPButton)o).id < 100000 && ((GuiOPPButton)o).clicked){
+				String eString = buttonToEntityString.get(o);
+				te.addTrigger(eString);
+			}
+		}
+	}
+	
+	void addButtons(){
+		int x = 0;
+		int y = 20;
+		int i = 0;
+		for (String s : strToClass.keySet()){
+			GuiOPPButton b = new GuiOPPButton(i++, x, y, 100, 20, unCamelCase(s));
+			buttonToEntityString.put(b, s);
+			if (te.triggers(s)){
+				b.clicked = true;
+			}
+			b.setColor(1.0F, 1.0F, 0.5F);
+			controlList.add(b);
+			y += 20;
+			if (y > height){
+				y = 20;
+				x += 100;
+				if (x > width){
+					return;
+				}
+			}
+		}
+		controlList.add(new GuiOPPButton(100000, 0, 0, 100, 20, "Select All"){
+			@Override
+			public void buttonClicked() {
+				for (Object o : controlList){
+					if (o instanceof GuiOPPButton){
+						GuiOPPButton b = (GuiOPPButton)o;
+						if (b.id < 100000)
+							b.clicked = true;
+					}
+				}
+			}
+		});
+		controlList.add(new GuiOPPButton(100001, 100, 0, 100, 20, "Clear All"){
+			@Override
+			public void buttonClicked() {
+				for (Object o : controlList){
+					if (o instanceof GuiOPPButton){
+						GuiOPPButton b = (GuiOPPButton)o;
+						if (b.id < 100000)
+							b.clicked = false;
+					}
+				}
+			}
+		});
 	}
 	
 	@Override
 	public void drawScreen(int par1, int par2, float par3) {
 		drawDefaultBackground();
-		for (int i = 0; i < camelToRegular.values().size(); i++){
-			drawCenteredString(ModLoader.getMinecraftInstance().fontRenderer, camelToRegular.get(i), width / 2, 110, 0xffcccc);
-		}
+		drawCenteredString(ModLoader.getMinecraftInstance().fontRenderer, "Select Triggering Entities", width / 2, 5, 0xefefef);
+		super.drawScreen(par1, par2, par3);
+	}
+	
+	@Override
+	public boolean doesGuiPauseGame() {
+		return true;
 	}
 }

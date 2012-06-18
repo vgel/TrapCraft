@@ -1,21 +1,23 @@
 package net.minecraft.trapcraft;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import net.minecraft.src.AxisAlignedBB;
 import net.minecraft.src.Block;
+import net.minecraft.src.BlockContainer;
 import net.minecraft.src.Entity;
+import net.minecraft.src.EntityList;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EnumMobType;
 import net.minecraft.src.IBlockAccess;
 import net.minecraft.src.Material;
 import net.minecraft.src.ModLoader;
+import net.minecraft.src.TileEntity;
 import net.minecraft.src.World;
 
-public class BlockObsidianPressurePlate extends Block {
-	/** The mob type that can trigger this pressure plate. */
-	private EnumMobType triggerMobType = EnumMobType.players;
+public class BlockObsidianPressurePlate extends BlockContainer {
 
 	public BlockObsidianPressurePlate(int par1, int par2, Material par4Material) {
 		super(par1, par2, par4Material);
@@ -29,8 +31,11 @@ public class BlockObsidianPressurePlate extends Block {
 	}
 	
 	@Override
-	public boolean blockActivated(World par1World, int par2, int par3, int i, EntityPlayer entityplayer) {
-		ModLoader.getMinecraftInstance().displayGuiScreen(new GuiObsidianPressurePlate());
+	public boolean blockActivated(World world, int x, int y, int z, EntityPlayer entityplayer) {
+		TileEntity t = world.getBlockTileEntity(x, y, z);
+		if (!(t instanceof TileEntityObsidianPressurePlate))
+			return false;
+		ModLoader.getMinecraftInstance().displayGuiScreen(new GuiObsidianPressurePlate((TileEntityObsidianPressurePlate)t));
 		return true;
 	}
 
@@ -84,8 +89,7 @@ public class BlockObsidianPressurePlate extends Block {
 	 * neighbor changed (coordinates passed are their own) Args: x, y, z,
 	 * neighbor blockID
 	 */
-	public void onNeighborBlockChange(World par1World, int par2, int par3,
-			int par4, int par5) {
+	public void onNeighborBlockChange(World par1World, int par2, int par3, int par4, int par5) {
 		boolean flag = false;
 
 		if (!par1World.isBlockNormalCube(par2, par3 - 1, par4)
@@ -139,67 +143,50 @@ public class BlockObsidianPressurePlate extends Block {
 	 * Checks if there are mobs on the plate. If a mob is on the plate and it is
 	 * off, it turns it on, and vice versa.
 	 */
-	private void setStateIfMobInteractsWithPlate(World par1World, int par2,
-			int par3, int par4) {
-		boolean flag = par1World.getBlockMetadata(par2, par3, par4) == 1;
+	private void setStateIfMobInteractsWithPlate(World world, int x, int y, int z) {
+		boolean flag = world.getBlockMetadata(x, y, z) == 1;
 		boolean flag1 = false;
 		float f = 0.125F;
 		List list = null;
 
-		if (triggerMobType == EnumMobType.everything) {
-			list = par1World.getEntitiesWithinAABBExcludingEntity(null,
-					AxisAlignedBB.getBoundingBoxFromPool((float) par2 + f,
-							par3, (float) par4 + f, (float) (par2 + 1) - f,
-							(double) par3 + 0.25D, (float) (par4 + 1) - f));
-		}
+		list = world.getEntitiesWithinAABBExcludingEntity(null, AxisAlignedBB.getBoundingBoxFromPool((float) x + f,
+				y, (float) z + f, (float) (x + 1) - f, (double) y + 0.25D, (float) (z + 1) - f));
 
-		if (triggerMobType == EnumMobType.mobs) {
-			list = par1World.getEntitiesWithinAABB(
-					net.minecraft.src.EntityLiving.class, AxisAlignedBB
-							.getBoundingBoxFromPool((float) par2 + f, par3,
-									(float) par4 + f, (float) (par2 + 1) - f,
-									(double) par3 + 0.25D, (float) (par4 + 1)
-											- f));
-		}
-
-		if (triggerMobType == EnumMobType.players) {
-			list = par1World.getEntitiesWithinAABB(
-					net.minecraft.src.EntityPlayer.class, AxisAlignedBB
-							.getBoundingBoxFromPool((float) par2 + f, par3,
-									(float) par4 + f, (float) (par2 + 1) - f,
-									(double) par3 + 0.25D, (float) (par4 + 1)
-											- f));
-		}
-
-		if (list.size() > 0) {
-			flag1 = true;
+		TileEntityObsidianPressurePlate te = (TileEntityObsidianPressurePlate)world.getBlockTileEntity(x, y, z);
+		for (Object o : list){
+			if (o instanceof Entity){
+				if (te.triggers((Entity)o)){
+					flag1 = true;
+					break;
+				}
+			}
 		}
 
 		if (flag1 && !flag) {
-			par1World.setBlockMetadataWithNotify(par2, par3, par4, 1);
-			par1World.notifyBlocksOfNeighborChange(par2, par3, par4, blockID);
-			par1World.notifyBlocksOfNeighborChange(par2, par3 - 1, par4,
+			world.setBlockMetadataWithNotify(x, y, z, 1);
+			world.notifyBlocksOfNeighborChange(x, y, z, blockID);
+			world.notifyBlocksOfNeighborChange(x, y - 1, z,
 					blockID);
-			par1World.markBlocksDirty(par2, par3, par4, par2, par3, par4);
-			par1World.playSoundEffect((double) par2 + 0.5D,
-					(double) par3 + 0.10000000000000001D, (double) par4 + 0.5D,
+			world.markBlocksDirty(x, y, z, x, y, z);
+			world.playSoundEffect((double) x + 0.5D,
+					(double) y + 0.10000000000000001D, (double) z + 0.5D,
 					"random.click", 0.3F, 0.6F);
 		}
 
 		if (!flag1 && flag) {
-			par1World.setBlockMetadataWithNotify(par2, par3, par4, 0);
-			par1World.notifyBlocksOfNeighborChange(par2, par3, par4, blockID);
-			par1World.notifyBlocksOfNeighborChange(par2, par3 - 1, par4,
+			world.setBlockMetadataWithNotify(x, y, z, 0);
+			world.notifyBlocksOfNeighborChange(x, y, z, blockID);
+			world.notifyBlocksOfNeighborChange(x, y - 1, z,
 					blockID);
-			par1World.markBlocksDirty(par2, par3, par4, par2, par3, par4);
-			par1World.playSoundEffect((double) par2 + 0.5D,
-					(double) par3 + 0.10000000000000001D, (double) par4 + 0.5D,
+			world.markBlocksDirty(x, y, z, x, y, z);
+			world.playSoundEffect((double) x + 0.5D,
+					(double) y + 0.10000000000000001D, (double) z + 0.5D,
 					"random.click", 0.3F, 0.5F);
 		}
 
 		if (flag1) {
-			par1World
-					.scheduleBlockUpdate(par2, par3, par4, blockID, tickRate());
+			world
+					.scheduleBlockUpdate(x, y, z, blockID, tickRate());
 		}
 	}
 
@@ -279,5 +266,10 @@ public class BlockObsidianPressurePlate extends Block {
 	 */
 	public int getMobilityFlag() {
 		return 1;
+	}
+
+	@Override
+	public TileEntity getBlockEntity() {
+		return new TileEntityObsidianPressurePlate();
 	}
 }

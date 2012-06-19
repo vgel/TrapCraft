@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
@@ -21,6 +22,9 @@ public class mod_TrapCraft extends BaseMod {
 	final Block obsidianPressurePlate;
 	final Block fireBox;
 	private static GuiScreen creativeInventory;
+	
+	public static Map<String, Class<?>> strToClass;
+	public static Map<Class<?>, String> classToStr;
 	
 	public mod_TrapCraft() {
 		setupDefaults();
@@ -113,6 +117,31 @@ public class mod_TrapCraft extends BaseMod {
 		// Hooks for adding to creative:
 		ModLoader.setInGameHook(this, true, false);
 		ModLoader.setInGUIHook(this, true, false);
+	}
+	
+	@Override
+	public void modsLoaded() {
+		super.modsLoaded();
+		try {
+			strToClass = (Map<String, Class<?>>)ModLoader.getPrivateValue(EntityList.class, null, "b");
+		} catch (Exception e){ //would use multicatch but not 1.7 :(
+			try {
+				strToClass = (Map<String, Class<?>>)ModLoader.getPrivateValue(EntityList.class, null, "stringToClassMapping");
+			} catch (Exception e1){
+				e.printStackTrace();
+			}
+		}
+		try {
+			classToStr = (Map<Class<?>, String>)ModLoader.getPrivateValue(EntityList.class, null, "c");
+		} catch (Exception e){ //would use multicatch but not 1.7 :(
+			try {
+				classToStr = (Map<Class<?>, String>)ModLoader.getPrivateValue(EntityList.class, null, "classToStringMapping");
+			} catch (Exception e1){
+				e.printStackTrace();
+			}
+		}
+		strToClass.put("Player", EntityPlayer.class);
+		classToStr.put(EntityPlayer.class, "Player");
 	}
 	
 	public boolean onTickInGame(float f, Minecraft minecraft)

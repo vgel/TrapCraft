@@ -9,8 +9,7 @@ import java.util.Properties;
 import java.util.Random;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.trapcraft.BlockObsidianPressurePlate;
-import net.minecraft.trapcraft.TileEntityObsidianPressurePlate;
+import net.minecraft.trapcraft.*;
 
 public class mod_TrapCraft extends BaseMod {
 	final String VERSION = "0.1 (1.2.5)";
@@ -19,6 +18,7 @@ public class mod_TrapCraft extends BaseMod {
 	
 	Properties props;
 	final Block obsidianPressurePlate;
+	final Block fireBox;
 	
 	public mod_TrapCraft() {
 		setupDefaults();
@@ -32,30 +32,51 @@ public class mod_TrapCraft extends BaseMod {
 		}
 		System.out.println(props.keys());
 		
-		int id = Integer.parseInt((String)props.get("obsidian_pressure_plate_id"));
-		System.out.println("id=" + id);
-		obsidianPressurePlate = (new BlockObsidianPressurePlate(id, Block.obsidian.blockIndexInTexture, Material.rock)).setHardness(0.5F).setStepSound(Block.soundStoneFootstep).setBlockName("obPressurePlate").setRequiresSelfNotify();
-		ModLoader.registerBlock(obsidianPressurePlate);
-		ModLoader.addRecipe(new ItemStack(obsidianPressurePlate, 1), new Object[]{
-			"   ",
-			"OOO",
-			"RRR",
-			'O', Block.obsidian,
-			'R', Item.redstone
-		});
-		ModLoader.addRecipe(new ItemStack(obsidianPressurePlate, 1), new Object[]{
-			"OOO",
-			"RRR",
-			"   ",
-			'O', Block.obsidian,
-			'R', Item.redstone
-		});
-		ModLoader.addName(obsidianPressurePlate, "Obsidian Pressure Plate");
-		ModLoader.registerTileEntity(TileEntityObsidianPressurePlate.class, "tileEntityObsidianPressurePlate");
+		// -- OBSIDIAN PRESSUREPLATE: --
+			int idOPP = Integer.parseInt((String)props.get("obsidian_pressure_plate_id"));
+			System.out.println("ObsidianplateID=" + idOPP);
+			obsidianPressurePlate = (new BlockObsidianPressurePlate(idOPP, Block.obsidian.blockIndexInTexture, Material.rock)).setHardness(0.5F).setStepSound(Block.soundStoneFootstep).setBlockName("obPressurePlate").setRequiresSelfNotify();
+			ModLoader.registerBlock(obsidianPressurePlate);
+			ModLoader.addRecipe(new ItemStack(obsidianPressurePlate, 1), new Object[]{
+				"   ",
+				"OOO",
+				"RRR",
+				'O', Block.obsidian,
+				'R', Item.redstone
+			});
+			ModLoader.addRecipe(new ItemStack(obsidianPressurePlate, 1), new Object[]{
+				"OOO",
+				"RRR",
+				"   ",
+				'O', Block.obsidian,
+				'R', Item.redstone
+			});
+			ModLoader.addName(obsidianPressurePlate, "Obsidian Pressure Plate");
+			ModLoader.registerTileEntity(TileEntityObsidianPressurePlate.class, "tileEntityObsidianPressurePlate");
+		// -- END --
+		
+		// -- FIREBOX: --
+			int idFB = Integer.parseInt((String)props.get("firebox_id"));
+			int idTF = Integer.parseInt((String)props.get("trapfire_id"));
+			System.out.println("FireboxID=" + idFB);
+			System.out.println("TrapfireID=" + idTF);
+			fireBox = (new BlockFirebox(idFB, idTF, Material.rock)).setBlockName("firebox").setHardness(0.5F).setStepSound(Block.soundStoneFootstep);
+			fireBox.blockIndexInTexture = ModLoader.addOverride("/terrain.png", "/trapcraft/images/firebox_top.png");
+			ModLoader.registerBlock(fireBox);
+			ModLoader.addRecipe(new ItemStack(fireBox, 1), new Object[]{
+				"CNC",
+				"CFC",
+				"CRC",
+				'C', Block.stone, 'N', Block.fenceIron, 'F', Item.flintAndSteel, 'R', Item.redstone
+			});
+			ModLoader.addName(fireBox, "Firebox");
+		// -- END --
 	}
 	
 	void setupDefaults(){
 		defaults.put("obsidian_pressure_plate_id", 142);
+		defaults.put("firebox_id", 143);
+		defaults.put("trapfire_id", 144);
 	}
 	
 	void loadProperties() throws IOException {

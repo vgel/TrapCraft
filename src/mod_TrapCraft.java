@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Random;
@@ -19,6 +20,7 @@ public class mod_TrapCraft extends BaseMod {
 	Properties props;
 	final Block obsidianPressurePlate;
 	final Block fireBox;
+	private static GuiScreen creativeInventory;
 	
 	public mod_TrapCraft() {
 		setupDefaults();
@@ -60,7 +62,8 @@ public class mod_TrapCraft extends BaseMod {
 			int idTF = Integer.parseInt((String)props.get("trapfire_id"));
 			System.out.println("FireboxID=" + idFB);
 			System.out.println("TrapfireID=" + idTF);
-			fireBox = (new BlockFirebox(idFB, idTF, Material.rock)).setBlockName("firebox").setHardness(0.5F).setStepSound(Block.soundStoneFootstep);
+			boolean fireBox_switch = (Boolean) defaults.get("firebox_replace_and_save_block");
+			fireBox = (new BlockFirebox(idFB, idTF, fireBox_switch, Material.rock)).setBlockName("firebox").setHardness(0.5F).setStepSound(Block.soundStoneFootstep);
 			fireBox.blockIndexInTexture = ModLoader.addOverride("/terrain.png", "/trapcraft/images/firebox_top.png");
 			ModLoader.registerBlock(fireBox);
 			ModLoader.addRecipe(new ItemStack(fireBox, 1), new Object[]{
@@ -77,6 +80,7 @@ public class mod_TrapCraft extends BaseMod {
 		defaults.put("obsidian_pressure_plate_id", 142);
 		defaults.put("firebox_id", 143);
 		defaults.put("trapfire_id", 144);
+		defaults.put("firebox_replace_and_save_block", false);
 	}
 	
 	void loadProperties() throws IOException {
@@ -106,7 +110,32 @@ public class mod_TrapCraft extends BaseMod {
 
 	@Override
 	public void load() {
-		
+		// Hooks for adding to creative:
+		ModLoader.setInGameHook(this, true, false);
+		ModLoader.setInGUIHook(this, true, false);
+	}
+	
+	public boolean onTickInGame(float f, Minecraft minecraft)
+	{
+		if(minecraft.currentScreen == null)
+		{
+			creativeInventory = null;
+		}
+		return true;
+	}
+	
+	public boolean onTickInGUI(float f, Minecraft minecraft, GuiScreen guiscreen)
+	{
+		if((guiscreen instanceof GuiContainerCreative) && !(creativeInventory instanceof GuiContainerCreative) && !minecraft.theWorld.isRemote)
+		{
+			Container container = ((GuiContainer)guiscreen).inventorySlots;
+			List list = ((ContainerCreative)container).itemList;
+			// ADD TO CREATIVE HERE:
+				list.add(new ItemStack(obsidianPressurePlate, 1, 0));
+				list.add(new ItemStack(fireBox, 1, 0));
+		}
+		creativeInventory = guiscreen;
+		return true;
 	}
 	
 	final String[] randFact = new String[]{

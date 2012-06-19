@@ -66,7 +66,10 @@ public class BlockFirebox extends Block
 				preID = world.getBlockId(x, y + 1, z);
 				preMETA = world.getBlockMetadata(x, y + 1, z);
 			} else {
-				Block.blocksList[world.getBlockId(x, y + 1, z)].dropBlockAsItem(world, x, y + 1, z, world.getBlockMetadata(x, y + 1, z), 0);
+				if(world.getBlockId(x, y + 1, z) != 0)
+				{
+					Block.blocksList[world.getBlockId(x, y + 1, z)].dropBlockAsItem(world, x, y + 1, z, world.getBlockMetadata(x, y + 1, z), 0);
+				}
 			}
 			wasPowered = true;
 			world.setBlockWithNotify(x, y + 1, z, trapFire.blockID);

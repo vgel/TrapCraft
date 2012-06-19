@@ -10,22 +10,9 @@ import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiOptions;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.ModLoader;
+import net.minecraft.src.mod_TrapCraft;
 
-public class GuiObsidianPressurePlate extends GuiScreen {
-	static Map<String, Class<?>> strToClass;
-	
-	static {
-		try {
-			strToClass = (Map<String, Class<?>>)ModLoader.getPrivateValue(EntityList.class, null, "b");
-		} catch (Exception e){ //would use multicatch but not 1.7 :(
-			try {
-				strToClass = (Map<String, Class<?>>)ModLoader.getPrivateValue(EntityList.class, null, "stringToClassMapping");
-			} catch (Exception e1){
-				e.printStackTrace();
-			}
-		}
-	}
-	
+public class GuiObsidianPressurePlate extends GuiScreen {	
 	static String unCamelCase(String camel){
 		String unCamel = "";
 		String currentWord = "";
@@ -90,7 +77,7 @@ public class GuiObsidianPressurePlate extends GuiScreen {
 		int x = 0;
 		int y = 20;
 		int i = 0;
-		for (String s : strToClass.keySet()){
+		for (String s : mod_TrapCraft.strToClass.keySet()){
 			GuiOPPButton b = new GuiOPPButton(i++, x, y, 100, 20, unCamelCase(s));
 			buttonToEntityString.put(b, s);
 			if (te.triggers(s)){

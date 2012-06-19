@@ -1,15 +1,20 @@
 package net.minecraft.trapcraft;
 
 import java.util.Random;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 
 public class BlockFirebox extends Block
 {
 	public boolean powered;
 	final Block trapFire;
-	boolean poweredO;
+	int preID;
+	int preMETA;
+	boolean wasPowered;
+	boolean switchBlock;
 	
-	public BlockFirebox(int id, int idFire, Material material)
+	public BlockFirebox(int id, int idFire, boolean switchBlock, Material material)
 	{
 		super(id, material);
 		blockIndexInTexture = 6;
@@ -31,7 +36,7 @@ public class BlockFirebox extends Block
 	
 	public int tickRate()
 	{
-		return 1;
+		return 4;
 	}
 	
 	public int getBlockTexture(IBlockAccess par1IBlockAccess, int x, int y, int z, int side)
@@ -46,16 +51,36 @@ public class BlockFirebox extends Block
 	
 	public void onNeighborBlockChange(World world, int x, int y, int z, int neighborID)
 	{
-		boolean powered = world.isBlockIndirectlyGettingPowered(x, y, z) || world.isBlockIndirectlyGettingPowered(x, y + 1, z);
-		
-		poweredO = powered;
+		world.scheduleBlockUpdate(x, y, z, blockID, tickRate());
+	}
+	
+	public void updateTick(World world, int x, int y, int z, Random random)
+	{
+		boolean powered = world.isBlockIndirectlyGettingPowered(x, y, z) || world.isBlockIndirectlyGettingPowered(x, y - 1, z);
 		
 		if(powered)
 		{
-			//world.scheduleBlockUpdate(x, y, z, blockID, tickRate());
+			if(switchBlock)
+			{
+				if(world.getBlockId(x, y + 1, z) != trapFire.blockID);
+				preID = world.getBlockId(x, y + 1, z);
+				preMETA = world.getBlockMetadata(x, y + 1, z);
+			} else {
+				Block.blocksList[world.getBlockId(x, y + 1, z)].dropBlockAsItem(world, x, y + 1, z, world.getBlockMetadata(x, y + 1, z), 0);
+			}
+			wasPowered = true;
 			world.setBlockWithNotify(x, y + 1, z, trapFire.blockID);
-		} else {
-			world.setBlockWithNotify(x, y + 1, z, 0);
+		}
+		else if(wasPowered && !powered)
+		{
+			if(switchBlock)
+			{
+				world.setBlockAndMetadataWithNotify(x, y + 1, z, preID, preMETA);
+			} else {
+				world.setBlockWithNotify(x, y + 1, z, 0);
+				
+			}
+			wasPowered = false;
 		}
 	}
 }

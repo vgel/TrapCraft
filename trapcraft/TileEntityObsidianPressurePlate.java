@@ -21,7 +21,6 @@ public class TileEntityObsidianPressurePlate extends TileEntity {
 			NBTTagString s = (NBTTagString)list.tagAt(i);
 			triggering.add(mod_TrapCraft.strToClass.get(s.data));
 		}
-		System.out.println(triggering);
 	}
 	
 	@Override
@@ -29,7 +28,6 @@ public class TileEntityObsidianPressurePlate extends TileEntity {
 		super.writeToNBT(nbtTagCompound);
 		NBTTagList list = new NBTTagList();
 		for (Class<?> clazz : triggering){
-			System.out.println("Saving trigger: " + mod_TrapCraft.classToStr.get(clazz));
 			list.appendTag(new NBTTagString(mod_TrapCraft.classToStr.get(clazz), mod_TrapCraft.classToStr.get(clazz)));
 		}
 		nbtTagCompound.setTag("trigger_list", list);
@@ -44,7 +42,6 @@ public class TileEntityObsidianPressurePlate extends TileEntity {
 	}
 	
 	public boolean triggers(String o){
-		System.out.println(o);
 		Class<?> c = mod_TrapCraft.strToClass.get(o);
 		for (Class<?> c1 : triggering){
 			if (c1.isAssignableFrom(c)){
@@ -55,7 +52,6 @@ public class TileEntityObsidianPressurePlate extends TileEntity {
 	}
 	
 	public boolean triggers(Entity e){
-		System.out.println(e);
 		Class<?> c = e.getClass();
 		for (Class<?> c1 : triggering){
 			if (c1.isAssignableFrom(c)){

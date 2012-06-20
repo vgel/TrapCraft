@@ -19,8 +19,9 @@ public class mod_TrapCraft extends BaseMod {
 	final Properties defaults = new Properties();
 	
 	Properties props;
-	final Block obsidianPressurePlate;
-	final Block fireBox;
+	public static Block obsidianPressurePlate;
+	public static Block fireBox;
+	public static Item itemDart;
 	private static GuiScreen creativeInventory;
 	
 	public static Map<String, Class<?>> strToClass;
@@ -66,8 +67,8 @@ public class mod_TrapCraft extends BaseMod {
 			int idTF = Integer.parseInt((String)props.get("trapfire_id"));
 			System.out.println("FireboxID=" + idFB);
 			System.out.println("TrapfireID=" + idTF);
-			boolean fireBox_switch = (Boolean) defaults.get("firebox_replace_and_save_block");
-			fireBox = (new BlockFirebox(idFB, idTF, fireBox_switch, Material.rock)).setBlockName("firebox").setHardness(0.5F).setStepSound(Block.soundStoneFootstep);
+			boolean fireBoxSwitch = (Boolean) defaults.get("firebox_replace_and_save_block");
+			fireBox = (new BlockFirebox(idFB, idTF, fireBoxSwitch, Material.rock)).setBlockName("firebox").setHardness(0.5F).setStepSound(Block.soundStoneFootstep);
 			fireBox.blockIndexInTexture = ModLoader.addOverride("/terrain.png", "/trapcraft/images/firebox_top.png");
 			ModLoader.registerBlock(fireBox);
 			ModLoader.addRecipe(new ItemStack(fireBox, 1), new Object[]{
@@ -78,6 +79,12 @@ public class mod_TrapCraft extends BaseMod {
 			});
 			ModLoader.addName(fireBox, "Firebox");
 		// -- END --
+			
+		// -- DART --
+			int dartId = Integer.parseInt((String)props.getProperty("dart_id"));
+			itemDart = (new ItemDart(dartId)).setItemName("item.dart");
+			ModLoader.addName(itemDart, "Dart");
+			
 	}
 	
 	void setupDefaults(){
@@ -85,6 +92,7 @@ public class mod_TrapCraft extends BaseMod {
 		defaults.put("firebox_id", 143);
 		defaults.put("trapfire_id", 144);
 		defaults.put("firebox_replace_and_save_block", false);
+		defaults.put("dart_id", "11969");
 	}
 	
 	void loadProperties() throws IOException {
@@ -117,6 +125,25 @@ public class mod_TrapCraft extends BaseMod {
 		// Hooks for adding to creative:
 		ModLoader.setInGameHook(this, true, false);
 		ModLoader.setInGUIHook(this, true, false);
+	}
+	
+	@Override
+	public boolean dispenseEntity(World world, double d, double d1, double d2, int i, int j, ItemStack itemstack) {
+		if (itemstack.getItem() == itemDart){
+			EntityDart entitydart = new EntityDart(world, d, d1, d2);
+			entitydart.setDartStack(itemstack);
+            entitydart.setArrowHeading(i, 0.10000000149011612D, j, 1.1F, 6F);
+            entitydart.doesArrowBelongToPlayer = true;
+            world.spawnEntityInWorld(entitydart);
+            world.playAuxSFX(1002, (int)d, (int)d1, (int)d2, 0);
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public void addRenderer(Map map) {
+		map.put(EntityDart.class, new RenderDart());
 	}
 	
 	@Override
@@ -162,6 +189,7 @@ public class mod_TrapCraft extends BaseMod {
 			// ADD TO CREATIVE HERE:
 				list.add(new ItemStack(obsidianPressurePlate, 1, 0));
 				list.add(new ItemStack(fireBox, 1, 0));
+				list.add(new ItemStack(itemDart, 1, 0));
 		}
 		creativeInventory = guiscreen;
 		return true;
@@ -174,6 +202,7 @@ public class mod_TrapCraft extends BaseMod {
 			"Isaac Asimov is the only author with a book in every Dewey-decimal category.",
 			"\"Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo.\" is a gramatically correct English sentence!",
 			"50% of people in Kentucky getting married for the first time are teenagers. Keep it classy, Kentucky.",
-			"Lightning strikes about 6000 times per minute."
+			"Lightning strikes about 6000 times per minute.",
+			"Knights would often fight other knights by holding their sword by the blade and swinging it like a hammer"
 	};
 }

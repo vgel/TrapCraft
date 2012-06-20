@@ -7,8 +7,9 @@ public class BlockSpike extends Block {
 
 	protected BlockSpike(int par1, int par2, Material par3Material) {
 		super(par1, par2, par3Material);
-		// TODO Auto-generated constructor stub
 	}
+	
+	
 	
     /**
      * Is this block (a) opaque and (b) a full 1m cube?  This determines whether or not to render the shared face of two
